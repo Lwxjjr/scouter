@@ -94,7 +94,7 @@ type Options struct {
 // backedAttacker 是对底层 vegeta 攻击者的抽象接口
 type backedAttacker interface {
 	Attack(vegeta.Targeter, vegeta.Pacer, time.Duration, string) <-chan *vegeta.Result
-	Stop()
+	Stop() bool
 }
 
 // Attacker 定义了外部可调用的压测引擎接口
