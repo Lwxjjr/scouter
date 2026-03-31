@@ -1,0 +1,32 @@
+package scouter
+
+import (
+	"context"
+	"net"
+	"sync/atomic"
+	"time"
+)
+
+// 具有负载均衡能力的DNS解析器
+type resolver struct {
+	idx   uint64
+	addrs []string
+}
+
+func NewResolver(addrs []string) *net.Resolver {
+	r := &resolver{addrs: addrs}
+
+	return &net.Resolver{
+		PreferGo: true,
+		Dial: func(ctx context.Context, network, address string) (net.Conn, error) {
+			d := net.Dialer{
+				Timeout: time.Millisecond * time.Duration(2000),
+			}
+			return d.DialContext(ctx, network, r.address())
+		},
+	}
+}
+
+func (r *resolver) address() string {
+	return r.addrs[atomic.AddUint64(&r.idx, 1)%uint64(len(r.addrs))]
+}
